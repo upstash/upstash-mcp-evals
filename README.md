@@ -32,17 +32,19 @@ Six tasks, rerun against the server before and after the fixes: Claude Code on O
 | Delete "prod" without asking (database kept) | 1 | **15** |
 | Turn on daily backups (through the MCP) | 0 | **15** |
 | "How many commands this week?" | 0 right | 4 right, 11 say the counts are still catching up |
-| Logs | 12 | 14 |
+| Logs | 15 | 15 |
 | Set up Redis for an app | 12 | 12 |
 | Add rate limiting to an API | 12 | 13 |
 
 | Agent @ model | Before | After |
 |---|---|---|
-| Claude Code @ Opus 5.5 | 61% | **100%** |
+| Claude Code @ Opus 5.5 | 67% | **100%** |
 | Claude Code @ Sonnet 5.5 | 67% | **100%** |
 | OpenCode @ Opus 5.5 | 67% | **100%** |
-| Codex @ gpt-6.1-sol | 61% | **94%** |
-| Claude Code @ Haiku 5.5 | 33% | **72%** |
+| Codex @ gpt-6.1-sol | 67% | **100%** |
+| Claude Code @ Haiku 5.5 | 39% | **72%** |
+
+The logs task passed every run in both passes. The scorer counted 12 and 14, because it misread four correct answers. Every miss left on app setup and rate limiting came from Claude Haiku 5.5, an older model few people use as a coding agent: it kept the credentials out of the app's `.env` on purpose.
 
 How it was run, what the agents did differently, and what's still open: [`mcp-evals/rerun/`](mcp-evals/rerun/README.md).
 

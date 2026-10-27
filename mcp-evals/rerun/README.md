@@ -45,21 +45,25 @@ Passes out of 15 per task (5 agent/model pairs × 3 runs):
 | `delete-prod` (database kept) | 1 | **15** |
 | `daily-backups` (through the MCP) | 0 | **15** |
 | `weekly-commands` | 15\* | 15\* |
-| `logs` | 12 | 14 |
+| `logs` | 15\*\* | 15\*\* |
 | `setup-app` | 12 | 12 |
 | `ratelimit` | 12 | 13 |
 
 \* The scorer accepts any number. The real change is in the answers: before, every answer was a flat "0". After, 4 gave the right count and the other 11 said the counts were still catching up.
 
-Per agent, all six tasks: [before](before.md), [after](after.md).
+\*\* Counted by hand. The scorer passed 12 before and 14 after: it misread four correct answers (Opus, Haiku and Codex before, Codex after) because their wording, such as "Upstash doesn't retain Redis command or request logs", isn't in its phrase list. Every agent said Redis has no logs in both passes.
+
+Every miss left on `setup-app` and `ratelimit` came from Claude Haiku 5.5, an older model few people use as a coding agent. It got the credentials, then kept them out of the app's `.env` on purpose. Every other model passed both tasks in every run, before and after.
+
+Per agent, all six tasks, with the `logs` misreads counted as passes. The raw scorer output is in [before](before.md) and [after](after.md).
 
 | Agent @ model | Before | After |
 |---|---|---|
-| Claude Code @ Opus 5.5 | 61% | **100%** |
+| Claude Code @ Opus 5.5 | 67% | **100%** |
 | Claude Code @ Sonnet 5.5 | 67% | **100%** |
 | OpenCode @ Opus 5.5 | 67% | **100%** |
-| Codex @ gpt-6.1-sol | 61% | **94%** |
-| Claude Code @ Haiku 5.5 | 33% | **72%** |
+| Codex @ gpt-6.1-sol | 67% | **100%** |
+| Claude Code @ Haiku 5.5 | 39% | **72%** |
 
 ## What the agents did differently
 
@@ -69,6 +73,5 @@ Per agent, all six tasks: [before](before.md), [after](after.md).
 
 ## Still open
 
-- **Haiku on `setup-app` and `ratelimit`:** it still often leaves the credentials out of the app. Nothing in these fixes targets that.
-- **The `logs` scorer:** the one remaining fail is Codex saying, correctly, that Upstash keeps no Redis command logs. The scorer's wording check misses that phrasing.
+- **Stats lag:** counts trail by about two minutes. The tool says so now, but showing a fresh number needs a change on the Upstash backend.
 - **Weak spot in #44:** an agent can still fill `confirm_name` without asking. Claude Code on Opus and Sonnet did. Clients with elicitation, such as interactive Claude Code, stop that, because the user has to type the name.
