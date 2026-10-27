@@ -50,6 +50,6 @@ How it was run, what the agents did differently, and what's still open: [`mcp-ev
 
 - **[`mcp-evals/report/`](mcp-evals/report/):** Leo's original report, unchanged. It has the [phase 1 sheet](mcp-evals/report/sheet.md), the [scoreboard](mcp-evals/report/scoreboard.md), the [missing-tools list](mcp-evals/report/missing-tools.md), [setup notes per agent](mcp-evals/report/setup.md) and [recordings](mcp-evals/report/recordings/).
 - **[`mcp-evals/rerun/`](mcp-evals/rerun/README.md):** the before/after rerun.
-- **`mcp-evals/`:** the eval harness. Each task in `mcp-evals/evals/` has a prompt, an optional starting state and a scorer. How to run it: [`mcp-evals/AGENTS.md`](mcp-evals/AGENTS.md). To test another server, set `MCPEVAL_MCP_URL`.
+- **`mcp-evals/`:** the eval harness. Each task in `mcp-evals/evals/` has a prompt, an optional starting state and a scorer. How to run it: [`mcp-evals/AGENTS.md`](mcp-evals/AGENTS.md).
 
 Credentials go in a gitignored `.env` at the repo root (`UPSTASH_EMAIL`, `UPSTASH_API_KEY`). Use a dedicated test account. Raw run transcripts are kept out of the repo.

@@ -6,7 +6,7 @@ import { childEnv } from "./agents/util.ts";
 import type { Case, Check, RunContext, Score, SetupResult } from "./cases.ts";
 import { loadEval, loadSetup, renderPrompt } from "./cases.ts";
 import type { Creds } from "./env.ts";
-import { BASELINE_DIR, MCP_URL, PRODUCTION_MCP_URL, RESULTS_DIR, UPSTASH_BIN } from "./paths.ts";
+import { BASELINE_DIR, RESULTS_DIR, UPSTASH_BIN } from "./paths.ts";
 import { run } from "./proc.ts";
 import { makeRedactor } from "./redact.ts";
 import { bypassKind, type Transcript } from "./transcript.ts";
@@ -184,13 +184,6 @@ export async function runOne(opts: {
       setupSteps.push({ by: "upstash-setup", what: `upstash setup ${agent.upstashSetupFlag} --project --mode mcp -y` });
     }
     setupSteps = [...setupSteps, ...(await agent.configure({ paths, creds }))];
-    // `upstash setup` always writes the production URL; point the agent at MCPEVAL_MCP_URL instead when it is set.
-    if (MCP_URL !== PRODUCTION_MCP_URL) {
-      for (const f of [".mcp.json", ".codex/config.toml", "opencode.json", ".cursor/mcp.json"]) {
-        const file = join(paths.workspace, f);
-        if (existsSync(file)) writeFileSync(file, readFileSync(file, "utf8").replaceAll(PRODUCTION_MCP_URL, MCP_URL));
-      }
-    }
 
     const setupFn = await loadSetup(testCase);
     if (setupFn) state = await setupFn(ctx);

@@ -14,8 +14,6 @@ export const RESULTS_DIR = join(ROOT, "results");
 export const REPORT_DIR = join(ROOT, "report");
 export const BASELINE_DIR = process.env.MCPEVAL_BASELINE_DIR ?? join(RESULTS_DIR, "baseline");
 export const UPSTASH_BIN = join(ROOT, "packages/core/node_modules/.bin/upstash");
-export const PRODUCTION_MCP_URL = "https://mcp.upstash.com/mcp";
-/** Overridable to run the evals against another server, e.g. a local build of unmerged changes. */
-export const MCP_URL = process.env.MCPEVAL_MCP_URL ?? PRODUCTION_MCP_URL;
+export const MCP_URL = "https://mcp.upstash.com/mcp";
 /** Every resource the harness creates or may delete starts with this. */
 export const RESOURCE_PREFIX = "mcpeval-";
