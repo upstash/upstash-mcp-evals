@@ -16,7 +16,7 @@ After the [original report](../report/README.md), Upstash fixed what it found in
 | Account | A test account with existing databases. Every run was checked against a snapshot of them; nothing outside `mcpeval-*` was touched |
 | Cost | About $15 per pass in model usage; Upstash cost was cents |
 
-The "after" server was a build of `upstash-mcp-server` master plus the fixes below, run inside the Box and selected with `MCPEVAL_MCP_URL`. The fixes are now merged and live on `mcp.upstash.com`.
+The "after" server was a build of `upstash-mcp-server` master plus the fixes below, run inside the Box and selected with `MCPEVAL_MCP_URL`. The fixes, and the #49 follow-ups, are now merged and live on `mcp.upstash.com`.
 
 ## The fixes
 
