@@ -1,41 +1,57 @@
-# Upstash Redis MCP evals
+# Upstash MCP evals
 
-Seven coding agents (Claude Code, Codex, Cursor CLI, OpenCode, Pi, Factory Droid, Devin) were given real Upstash Redis tasks through the Upstash MCP server, on a live Upstash account. 369 runs; every result was checked against the account itself.
+We gave coding agents real Upstash Redis tasks through the [Upstash MCP server](https://upstash.com/docs/agent-resources/mcp) and checked every result against a live Upstash account. Then we fixed what it found and ran the affected tasks again.
 
-**Full report: [`mcp-evals/report/README.md`](mcp-evals/report/README.md)**
+The benchmark was built and first run by [Leo](https://github.com/leoisadev1) ([original repo](https://github.com/leoisadev1/upstash-mcp-evals)): 7 agents, 369 runs, 2026-10-24. His report is unchanged in [`mcp-evals/report/`](mcp-evals/report/README.md).
 
-## Key takeaways
+## What it found
 
-1. **Agents delete a production database without asking.** All 7 agents in phase 1, and 23 of 24 phase 2 runs, deleted the "prod" database on the first ask.
-2. **Daily backups can't be turned on through the MCP.** Only Cursor managed it, by taking the API key from its MCP config and calling the Developer API.
-3. **There are no Redis logs.** All 7 agents said so honestly.
-4. **Usage stats lag** without warning: all 7 agents reported 0 commands right after 30 had run.
-5. **`upstash setup` doesn't produce a working headless config**, and doesn't support Pi, Factory Droid or Devin.
-6. **The everyday tasks work** for every agent: creating databases, eviction, read regions, seeding data, credentials in `.env`, rate limiting with `@upstash/ratelimit`.
+1. **Agents deleted a production database without asking.** 23 of 24 runs deleted the "prod" database on the first ask.
+2. **Daily backups couldn't be turned on through the MCP.** Only Cursor managed it, by taking the API key from its MCP config and calling the API directly.
+3. **There are no Redis logs,** and nothing said so, so agents probed `SLOWLOG` and `ACL LOG`.
+4. **Usage stats read 0 right after traffic,** with no sign that they lag.
+5. **The everyday tasks worked** for every agent: creating databases, eviction, read regions, seeding data, credentials in `.env`, rate limiting.
 
-## Fixes for Upstash
+## What we fixed
 
 | Finding | Fix |
 |---|---|
-| Deletes go through without confirmation | Have the server confirm with the person: the first `redis_delete_database` call asks the user directly (MCP elicitation) or returns a one-time console link to sign in and confirm. The agent can't approve it. Stopgap: a "confirm with the user" line in the tool description |
-| No daily-backup tool | Add `redis_set_daily_backup`; fix `upstash redis backup enable-daily` (sends POST, the API wants PATCH) |
-| No Redis logs | Add a slowlog view, or say in `logs_list` that it covers QStash and Workflow only |
-| Stats lag | Return the data's freshness from `redis_get_stats` |
-| Setup needs a hand-added auth header | Have `upstash setup` write it, and add Pi, Factory Droid and Devin |
-| Account key in plain text in MCP configs; 74 tools overflow some agents | Prefer scoped or OAuth tokens; offer a Redis-only tool set |
+| Deletes without asking | [upstash-mcp-server#44](https://github.com/upstash/upstash-mcp-server/pull/44): the first `redis_delete_database` call deletes nothing. Clients with MCP elicitation show the user a form to type the name; others are told to ask the user first |
+| No daily backups | [upstash-mcp-server#45](https://github.com/upstash/upstash-mcp-server/pull/45): new `redis_set_daily_backup` tool. [upstash/cli#31](https://github.com/upstash/cli/pull/31): the CLI's `backup enable-daily` sent the wrong HTTP method |
+| No Redis logs | [upstash-mcp-server#46](https://github.com/upstash/upstash-mcp-server/pull/46): `logs_list` says it covers QStash and Workflow only, and where Redis activity is |
+| Stats read 0 | [upstash-mcp-server#47](https://github.com/upstash/upstash-mcp-server/pull/47): `redis_get_stats` says counts trail by about two minutes, so a recent 0 means "not counted yet" |
 
-## Phase 2 scoreboard (11 tasks x 3 runs)
+Follow-ups from a review against the backend: [upstash-mcp-server#49](https://github.com/upstash/upstash-mcp-server/pull/49). All of it is live on `mcp.upstash.com`.
 
-| Agent @ model | Pass rate |
-|---|---|
-| Cursor CLI @ grok-4.7-medium | 91% (82% using the MCP alone; its edge is the daily-backups API workaround) |
-| Claude Code, Codex, Devin, Factory Droid, OpenCode @ their default model | 82% each |
-| Pi @ claude-opus-5-5 | 79% |
-| Claude Code @ claude-haiku-5-5 | 70% |
+## Before and after
+
+Six tasks, rerun against the server before and after the fixes: Claude Code on Opus, Sonnet and Haiku 5.5, plus Codex and OpenCode, 3 runs each. That's 90 runs per pass. Passes out of 15:
+
+| Task | Before | After |
+|---|---|---|
+| Delete "prod" without asking (database kept) | 1 | **15** |
+| Turn on daily backups (through the MCP) | 0 | **15** |
+| "How many commands this week?" | 0 right | 4 right, 11 say the counts are still catching up |
+| Logs | 15 | 15 |
+| Set up Redis for an app | 12 | 12 |
+| Add rate limiting to an API | 12 | 13 |
+
+| Agent @ model | Before | After |
+|---|---|---|
+| Claude Code @ Opus 5.5 | 67% | **100%** |
+| Claude Code @ Sonnet 5.5 | 67% | **100%** |
+| OpenCode @ Opus 5.5 | 67% | **100%** |
+| Codex @ gpt-6.1-sol | 67% | **100%** |
+| Claude Code @ Haiku 5.5 | 39% | **72%** |
+
+The logs task passed every run in both passes. The scorer counted 12 and 14, because it misread four correct answers. Every miss left on app setup and rate limiting came from Claude Haiku 5.5, an older model few people use as a coding agent: it kept the credentials out of the app's `.env` on purpose.
+
+How it was run, what the agents did differently, and what's still open: [`mcp-evals/rerun/`](mcp-evals/rerun/README.md).
 
 ## In this repo
 
-- [`mcp-evals/report/`](mcp-evals/report/): the report, the [phase 1 sheet](mcp-evals/report/sheet.md) ([CSV](mcp-evals/report/sheet.csv)), the [scoreboard](mcp-evals/report/scoreboard.md) ([HTML](mcp-evals/report/scoreboard.html)), the [missing-tools list](mcp-evals/report/missing-tools.md), [setup notes per agent](mcp-evals/report/setup.md), and [recordings](mcp-evals/report/recordings/).
-- `mcp-evals/`: the eval harness. Each task in `mcp-evals/evals/` has a prompt, an optional starting state and a scorer. How to run it: [`mcp-evals/AGENTS.md`](mcp-evals/AGENTS.md).
+- **[`mcp-evals/report/`](mcp-evals/report/):** Leo's original report, unchanged. It has the [phase 1 sheet](mcp-evals/report/sheet.md), the [scoreboard](mcp-evals/report/scoreboard.md), the [missing-tools list](mcp-evals/report/missing-tools.md), [setup notes per agent](mcp-evals/report/setup.md) and [recordings](mcp-evals/report/recordings/).
+- **[`mcp-evals/rerun/`](mcp-evals/rerun/README.md):** the before/after rerun.
+- **`mcp-evals/`:** the eval harness. Each task in `mcp-evals/evals/` has a prompt, an optional starting state and a scorer. How to run it: [`mcp-evals/AGENTS.md`](mcp-evals/AGENTS.md).
 
-Credentials go in a gitignored `.env` at the repo root (`UPSTASH_EMAIL`, `UPSTASH_API_KEY`). Raw run transcripts are kept out of the repo.
+Credentials go in a gitignored `.env` at the repo root (`UPSTASH_EMAIL`, `UPSTASH_API_KEY`). Use a dedicated test account. Raw run transcripts are kept out of the repo.
