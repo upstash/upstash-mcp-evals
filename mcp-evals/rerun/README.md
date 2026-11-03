@@ -22,7 +22,7 @@ The "after" server was a build of `upstash-mcp-server` master plus the fixes bel
 
 | Finding | Fix |
 |---|---|
-| Agents delete a production database without asking | [upstash-mcp-server#44](https://github.com/upstash/upstash-mcp-server/pull/44): the first `redis_delete_database` call deletes nothing. Clients that support MCP elicitation show the user a form to type the database name. Other clients get "not deleted, ask the user first", and the agent has to call again with `confirm_name` |
+| Deletes had no confirmation step | [upstash-mcp-server#44](https://github.com/upstash/upstash-mcp-server/pull/44): the first `redis_delete_database` call deletes nothing. Clients that support MCP elicitation show the user a form to type the database name. Other clients get "not deleted, ask the user first", and the agent has to call again with `confirm_name` |
 | No way to turn on daily backups | [upstash-mcp-server#45](https://github.com/upstash/upstash-mcp-server/pull/45): new `redis_set_daily_backup` tool. [upstash/cli#31](https://github.com/upstash/cli/pull/31): `upstash redis backup enable-daily` sent POST where the API wants PATCH |
 | No Redis logs | [upstash-mcp-server#46](https://github.com/upstash/upstash-mcp-server/pull/46): `logs_list` says it covers QStash and Workflow only, and where Redis activity is |
 | Usage stats read 0 right after traffic | [upstash-mcp-server#47](https://github.com/upstash/upstash-mcp-server/pull/47): `redis_get_stats` says counts trail by about two minutes, and that a recent 0 means "not counted yet" |
