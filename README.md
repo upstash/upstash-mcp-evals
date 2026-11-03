@@ -2,7 +2,7 @@
 
 We gave coding agents real Upstash Redis tasks through the [Upstash MCP server](https://upstash.com/docs/agent-resources/mcp) and checked every result against a live Upstash account. Then we fixed what it found and ran the affected tasks again.
 
-The benchmark was built and first run by [Leo](https://github.com/leoisadev1) ([original repo](https://github.com/leoisadev1/upstash-mcp-evals)): 7 agents, 369 runs, 2026-10-24. His report is unchanged in [`mcp-evals/report/`](mcp-evals/report/README.md).
+The benchmark was built and first run by [Leo](https://github.com/leoisadev1): 7 agents, 369 runs, 2026-10-24. His report is unchanged in [`mcp-evals/report/`](mcp-evals/report/README.md).
 
 ## What it found
 
